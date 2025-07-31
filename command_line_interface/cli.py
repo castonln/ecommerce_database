@@ -84,6 +84,18 @@ class Command_Line_Interface:
     def view_products(self) -> None:
         pass
 
+    def add_product(self) -> None:
+        pass
+
+    def edit_product(self) -> None:
+        pass
+
+    def delete_product(self) -> None:
+        pass
+
+    def make_purchase(self) -> None:
+        pass
+
     def add_card(self) -> None:
         pass
 

@@ -1,6 +1,5 @@
 import mysql.connector
 
-
 class Connector:
     """
     Connects to the database.

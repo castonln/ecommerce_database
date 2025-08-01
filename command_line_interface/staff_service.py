@@ -1,6 +1,6 @@
 class StaffService:
-    def __init__(self, cursor):
-        self.cursor = cursor
+    def __init__(self, connector, user):
+        self.connector = connector
 
     def add_product(self):
         pass

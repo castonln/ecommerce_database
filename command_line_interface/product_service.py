@@ -9,7 +9,7 @@ class ProductService:
         self.connector.cursor.execute("SELECT * FROM products")
         return self.connector.cursor.fetchall()
     
-    def add_product(self, product: Tuple[int, int, str, float]):
+    def add_product(self, product: Tuple[int, int, str, float]) -> bool:
         """
         Adds a new product to the database.
 
@@ -26,7 +26,7 @@ class ProductService:
         except Exception as e:
             return False
 
-    def edit_product(self, product: Tuple[int, int, str, float]):
+    def edit_product(self, product: Tuple[int, int, str, float]) -> bool:
         """
         Edits an existing product in the database.
 
@@ -43,7 +43,7 @@ class ProductService:
         except Exception as e:
             return False
 
-    def delete_product(self, product_id: int):
+    def delete_product(self, product_id: int) -> bool:
         """
         Deletes an exisiting product from the database.
 
@@ -51,9 +51,13 @@ class ProductService:
 
         Returns False otherwise.
         """
-        self.connector.cursor.execute(
-                "DELETE FROM products WHERE product_id = %s", (product_id,))
-        self.connector.db.commit()
+        try:
+            self.connector.cursor.execute(
+                    "DELETE FROM products WHERE product_id = %s", (product_id,))
+            self.connector.db.commit()
+            return True
+        except Exception as e:
+            return False
 
     def update_product_stock_transaction(self, product_id: int, amount: int):
         """

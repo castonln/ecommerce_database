@@ -54,7 +54,7 @@ class User:
             cards = self.connector.cursor.fetchall()
             for card in cards:
                 (cc_number, cc_name, exp_date, csc, customer_username) = card
-                self.add_card(cc_number, cc_name, exp_date, csc, customer_username)
+                self.cards.append((cc_number, cc_name, exp_date, csc, customer_username))
             return True
 
     def sign_in_staff(self, username, password) -> Optional[Tuple[str, str, str]]:

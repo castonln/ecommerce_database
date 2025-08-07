@@ -84,7 +84,7 @@ CREATE TABLE Purchases (
     purchase_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (customer_username, product_id, purchase_time),
     FOREIGN KEY (customer_username) REFERENCES Customers(customer_username),
-	FOREIGN KEY (product_id) REFERENCES Products(product_id),
+	FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE,     -- not preferred. an inactive attribute would be much better in products.
     FOREIGN KEY (cc_number) REFERENCES CreditCards(cc_number)
 );
 

@@ -1,16 +1,14 @@
 import os
 import questionary
 from product_service import ProductService
-from staff_service import StaffService
 from customer_service import CustomerService
 from datetime import datetime
 from typing import Optional, Tuple, Callable
 
 class Command_Line_Interface:
-    def __init__(self, user, product_service: ProductService, staff_service: StaffService, customer_service: CustomerService):
+    def __init__(self, user, product_service: ProductService, customer_service: CustomerService):
         self.user = user
         self.product_service = product_service
-        self.staff_service = staff_service
         self.customer_service = customer_service
 
     def clear_screen(self) -> None:
@@ -159,7 +157,6 @@ class Command_Line_Interface:
         stock_width = 8
         price_width = 10
 
-        # Products
         choices = [
             questionary.Choice(
                 title=(
@@ -261,7 +258,7 @@ class Command_Line_Interface:
         Add a new product by editing its stock, title, and price.
         """
         product = (None, 0, "New Product", 0.00)
-        self._product_edit_loop(product, self.staff_service.add_product)
+        self._product_edit_loop(product, self.product_service.add_product)
 
         self.show_user_options()
 
@@ -269,7 +266,7 @@ class Command_Line_Interface:
         """
         Edit a product's stock, title, and / or price.
         """
-        self._product_edit_loop(product, self.staff_service.edit_product)
+        self._product_edit_loop(product, self.product_service.edit_product)
 
         self.view_products()
 
@@ -278,7 +275,7 @@ class Command_Line_Interface:
         answer = questionary.confirm(f"Are you sure you want to delete {title}?").ask()
 
         if answer:
-            self.staff_service.delete_product(product_id)
+            self.product_service.delete_product(product_id)
 
     def make_purchase(self, product) -> None:
         pass

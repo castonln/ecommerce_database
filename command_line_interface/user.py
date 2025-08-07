@@ -1,7 +1,6 @@
 from typing import Optional, Tuple
 from datetime import date
 
-
 class User:
     """
     Logic for the current user of the CLI.

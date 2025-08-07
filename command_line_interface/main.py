@@ -8,7 +8,7 @@ if __name__ == "__main__":
     connector = Connector()
     user = User(connector)
     product_service = ProductService(connector)
-    customer_service = CustomerService(connector, user)
+    customer_service = CustomerService(connector, user, product_service)
 
     cli = Command_Line_Interface(user, product_service, customer_service)
 

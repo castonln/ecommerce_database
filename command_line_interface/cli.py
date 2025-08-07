@@ -5,6 +5,7 @@ from customer_service import CustomerService
 from datetime import datetime
 from typing import Optional, Tuple, Callable
 
+
 class Command_Line_Interface:
     def __init__(self, user, product_service: ProductService, customer_service: CustomerService):
         self.user = user
@@ -272,13 +273,55 @@ class Command_Line_Interface:
 
     def delete_product(self, product) -> None:
         (product_id, _, title, _) = product
-        answer = questionary.confirm(f"Are you sure you want to delete {title}?").ask()
+        answer = questionary.confirm(
+            f"Are you sure you want to delete {title}?").ask()
 
         if answer:
             self.product_service.delete_product(product_id)
 
     def make_purchase(self, product) -> None:
-        pass
+        """
+        Purchase an amount of a product with a selected card.
+        """
+
+        (product_id, stock, title, price) = product
+
+        self.clear_screen()
+        print(f"\033[95m\033[1m{title} - ${price} - ({stock})\033[0m")
+
+        def validate_quantity(text, stock):
+            if text.isdigit() and int(text) <= stock and int(text) != 0:
+                return True
+            else:
+                return False
+
+        answers = questionary.form(
+            amount=questionary.text("Quantity: ",
+                                    validate=lambda text: True if
+                                    validate_quantity(text, stock)
+                                    else "Please enter a valid quantity less than the stock of the item"),
+            cc_number=questionary.select(
+                "Which card would you like to use?",
+                choices=[
+                    questionary.Choice(
+                        title=f"{cc_name:<25} **** {str(cc_number)[12:]}",
+                        value=cc_number
+                    )
+                    for (cc_number, cc_name, _, _, _) in self.user.cards
+                ]
+            )
+        ).ask()
+
+        amount = int(answers['amount'])
+        cc_number = int(answers['cc_number'])
+        total = amount * price
+
+        confirmation = questionary.confirm(f"Purchase {amount} {title} for ${total}?").ask()
+
+        if confirmation:
+            self.customer_service.make_purchase(product_id, cc_number, amount)
+        else:
+            self.view_products()
 
     def add_card(self) -> None:
         def validate_exp_date(text):

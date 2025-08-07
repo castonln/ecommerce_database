@@ -22,3 +22,11 @@ class ProductService:
         self.connector.cursor.execute(
                 "DELETE FROM products WHERE product_id = %s", (product_id,))
         self.connector.db.commit()
+
+    def update_product_stock_transaction(self, product_id, amount):
+        """
+        Update a product's stock after a transaction has gone through (minuses its stock by the amount of units purchased).
+        """
+        self.connector.cursor.execute(
+                "UPDATE products SET stock = stock - %s WHERE product_id = %s", (amount, product_id))
+        self.connector.db.commit()

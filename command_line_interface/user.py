@@ -1,5 +1,5 @@
 from typing import Optional, Tuple
-from datetime import date
+from connector import Connector
 
 class User:
     """
@@ -8,7 +8,7 @@ class User:
     Attributes are None if signed out.
     """
 
-    def __init__(self, connector):
+    def __init__(self, connector: Connector):
         self.username = None
         self.password = None
         self.name = None

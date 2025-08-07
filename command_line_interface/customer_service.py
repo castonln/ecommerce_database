@@ -1,14 +1,15 @@
 from user import User
 from product_service import ProductService
-from datetime import date, datetime
+from datetime import datetime
+from connector import Connector
 
 class CustomerService:
-    def __init__(self, connector, user: User, product_service: ProductService):
+    def __init__(self, connector: Connector, user: User, product_service: ProductService):
         self.connector = connector
         self.user = user
         self.product_service = product_service
 
-    def make_purchase(self, product_id, cc_number, amount):
+    def make_purchase(self, product_id: int, cc_number: int, amount: int) -> bool:
         """
         Makes a purchase of a product_id with a cc_number from the current logged in user.
 

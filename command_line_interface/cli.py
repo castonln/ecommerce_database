@@ -4,18 +4,21 @@ from product_service import ProductService
 from customer_service import CustomerService
 from datetime import datetime
 from typing import Optional, Tuple, Callable
-
+from user import User
 
 class Command_Line_Interface:
-    def __init__(self, user, product_service: ProductService, customer_service: CustomerService):
+    def __init__(self, user: User, product_service: ProductService, customer_service: CustomerService):
         self.user = user
         self.product_service = product_service
         self.customer_service = customer_service
 
-    def clear_screen(self) -> None:
+    def _clear_screen(self) -> None:
+        """
+        Function to clear the terminal of any previous commands.
+        """
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    def sign_in(self) -> bool:
+    def _sign_in(self) -> bool:
         """
         Contacts User instance to sign user in.
 
@@ -24,7 +27,7 @@ class Command_Line_Interface:
         Returns False for a program exit.
         """
 
-        self.clear_screen()
+        self._clear_screen()
 
         sign_in_type = questionary.select(
             "Sign in as staff or customer?",
@@ -59,21 +62,21 @@ class Command_Line_Interface:
                 "Press any key to try again...").ask()
             return True
 
-    def sign_out(self) -> None:
+    def _sign_out(self) -> None:
         answer = questionary.confirm(
             "Are you sure you want to sign out?").ask()
 
         if answer:
             self.user.sign_out()
 
-        self.clear_screen()
+        self._clear_screen()
 
-    def show_user_options(self) -> None:
+    def _show_user_options(self) -> None:
         """
         Show appropriate main menu options for signed in user depending on role.
         """
 
-        self.clear_screen()
+        self._clear_screen()
 
         options = {
             "Staff": ["View Products", "Add Product", questionary.Choice(
@@ -92,27 +95,27 @@ class Command_Line_Interface:
         ).ask()
 
         action = {
-            "View Products": self.view_products,
-            "Add Product": self.add_product,
-            "Add Card": self.add_card,
-            "Sign Out": self.sign_out,
+            "View Products": self._view_products,
+            "Add Product": self._add_product,
+            "Add Card": self._add_card,
+            "Sign Out": self._sign_out,
         }.get(answer)
 
         action()
 
-    def view_products(self) -> None:
+    def _view_products(self) -> None:
         """
-        Show all products in the database and allow a user to select one.
+        Show all products in the database and allow a user to select one. May also return None if the user chooses to "Go back"
         """
 
-        self.clear_screen()
+        self._clear_screen()
 
-        def view_product(product):
+        def view_product(product: Tuple[int, int, str, float]):
             """
             View options for a particular product
             """
 
-            self.clear_screen()
+            self._clear_screen()
 
             (_, _, title, price) = product
             print(f"\033[95m\033[1m {title} - ${price}\033[0m")
@@ -137,12 +140,12 @@ class Command_Line_Interface:
             ).ask()
 
             if answer == "__back__":
-                self.view_products()
+                self._view_products()
             else:
                 action = {
-                    "Edit Product": self.edit_product,
-                    "Delete Product": self.delete_product,
-                    "Make Purchase": self.make_purchase,
+                    "Edit Product": self._edit_product,
+                    "Delete Product": self._delete_product,
+                    "Make Purchase": self._make_purchase,
                 }.get(answer)
 
                 action(product)
@@ -195,7 +198,7 @@ class Command_Line_Interface:
         (product_id, stock, title, price) = product
 
         while True:
-            self.clear_screen()
+            self._clear_screen()
             print(f"\033[95m\033[1m{title} - ${price} - ({stock})\033[0m")
 
             answer = questionary.select(
@@ -251,42 +254,52 @@ class Command_Line_Interface:
                 price = question.ask()
             else:
                 if answer == "__confirm__":
-                    confirm((product_id, stock, title, price))
+                    if confirm((product_id, stock, title, price)):
+                        questionary.press_any_key_to_continue(
+                            f'Changes saved.\nPress any key to continue...').ask()
+                    else:
+                        questionary.press_any_key_to_continue(
+                            f'Error. Failed to save changes.\nPress any key to continue...').ask()
                 break
 
-    def add_product(self) -> None:
+    def _add_product(self) -> None:
         """
         Add a new product by editing its stock, title, and price.
         """
         product = (None, 0, "New Product", 0.00)
         self._product_edit_loop(product, self.product_service.add_product)
 
-        self.show_user_options()
+        self._show_user_options()
 
-    def edit_product(self, product) -> None:
+    def _edit_product(self, product: Tuple[int, int, str, float]) -> None:
         """
         Edit a product's stock, title, and / or price.
         """
         self._product_edit_loop(product, self.product_service.edit_product)
 
-        self.view_products()
+        self._view_products()
 
-    def delete_product(self, product) -> None:
+    def _delete_product(self, product: Tuple[int, int, str, float]) -> None:
         (product_id, _, title, _) = product
         answer = questionary.confirm(
             f"Are you sure you want to delete {title}?").ask()
 
         if answer:
-            self.product_service.delete_product(product_id)
+            if self.product_service.delete_product(product_id):
+                questionary.press_any_key_to_continue(
+                    f'Changes saved.\nPress any key to continue...').ask()
+            else:
+                questionary.press_any_key_to_continue(
+                    f'Error. Failed to save changes.\nPress any key to continue...').ask()
 
-    def make_purchase(self, product) -> None:
+    def _make_purchase(self, product: Tuple[int, int, str, float]) -> None:
         """
         Purchase an amount of a product with a selected card.
         """
 
         (product_id, stock, title, price) = product
 
-        self.clear_screen()
+        self._clear_screen()
         print(f"\033[95m\033[1m{title} - ${price} - ({stock})\033[0m")
 
         def validate_quantity(text, stock):
@@ -316,14 +329,20 @@ class Command_Line_Interface:
         cc_number = int(answers['cc_number'])
         total = amount * price
 
-        confirmation = questionary.confirm(f"Purchase {amount} {title} for ${total}?").ask()
+        confirmation = questionary.confirm(
+            f"Purchase {amount} {title} for ${total}?").ask()
 
         if confirmation:
-            self.customer_service.make_purchase(product_id, cc_number, amount)
+            if self.customer_service.make_purchase(product_id, cc_number, amount):
+                questionary.press_any_key_to_continue(
+                    f'Purchase successful.\nPress any key to continue...').ask()
+            else:
+                questionary.press_any_key_to_continue(
+                    f'Error. Failed to make purchase.\nPress any key to continue...').ask()
         else:
-            self.view_products()
+            self._view_products()
 
-    def add_card(self) -> None:
+    def _add_card(self) -> None:
         def validate_exp_date(text):
             try:
                 datetime.strptime(text, "%Y-%m")
@@ -374,8 +393,8 @@ class Command_Line_Interface:
         """
 
         while True:
-            if not self.sign_in():
+            if not self._sign_in():
                 break
 
             while self.user.signed_in:
-                self.show_user_options()
+                self._show_user_options()
